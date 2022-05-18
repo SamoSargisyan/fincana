@@ -1,23 +1,25 @@
 <?php
 
-class Api_Trade_Payer
+class TradePayer
 {
-    private $arParams = array();
-    private $arError = array();
+    private array $arParams;
+    private array $arError;
 
 
-    public function __construct($params = array())
+    public function __construct($params)
     {
         $this->arParams = $params;
     }
 
-
-    private function Request($req = array())
+    /**
+     * @throws JsonException
+     */
+    private function request(array $req)
     {
-        $msec = round(microtime(true) * 1000);
-        $req['post']['ts'] = $msec;
+        $milliSec = round(microtime(true) * 1000);
+        $req['post']['ts'] = $milliSec;
 
-        $post = json_encode($req['post']);
+        $post = json_encode($req['post'], JSON_THROW_ON_ERROR);
 
         $sign = hash_hmac('sha256', $req['method'] . $post, $this->arParams['key']);
 
@@ -40,84 +42,98 @@ class Api_Trade_Payer
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $arResponse = json_decode($response, true);
+        $arResponse = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
         if ($arResponse['success'] !== true) {
             $this->arError = $arResponse['error'];
-            throw new Exception($arResponse['error']['code']);
+            throw new \RuntimeException($arResponse['error']['code']);
         }
 
         return $arResponse;
     }
 
 
-    public function GetError()
+    public function getError(): array
     {
         return $this->arError;
     }
 
 
-    public function Info()
+    /**
+     * @throws JsonException
+     */
+    public function info()
     {
-        $res = $this->Request(array(
+        return $this->request([
             'method' => 'info',
-        ));
-
-        return $res;
+        ]);
     }
 
 
-    public function Orders($pair = 'BTC_USDT')
+    /**
+     * @throws JsonException
+     */
+    public function orders($pair = 'BTC_USDT')
     {
-        $res = $this->Request(array(
+        $res = $this->request([
             'method' => 'orders',
             'post' => array(
                 'pair' => $pair,
             ),
-        ));
+        ]);
 
         return $res['pairs'];
     }
 
 
-    public function Account()
+    /**
+     * @throws JsonException
+     */
+    public function account()
     {
-        $res = $this->Request(array(
+        $res = $this->request([
             'method' => 'account',
-        ));
+        ]);
 
         return $res['balances'];
     }
 
 
-    public function OrderCreate($req = array())
+    /**
+     * @throws JsonException
+     */
+    public function orderCreate(array $req)
     {
-        $res = $this->Request(array(
+        return $this->request([
             'method' => 'order_create',
             'post' => $req,
-        ));
-
-        return $res;
+        ]);
     }
 
 
-    public function OrderStatus($req = array())
+    /**
+     * @throws JsonException
+     */
+    public function orderStatus(array $req)
     {
-        $res = $this->Request(array(
+        $res = $this->request([
             'method' => 'order_status',
             'post' => $req,
-        ));
+        ]);
 
         return $res['order'];
     }
 
 
-    public function MyOrders($req = array())
+    /**
+     * @throws JsonException
+     */
+    public function myOrders(array $req)
     {
-        $res = $this->Request(array(
+        $res = $this->request([
             'method' => 'my_orders',
             'post' => $req,
-        ));
+        ]);
 
         return $res['items'];
     }
