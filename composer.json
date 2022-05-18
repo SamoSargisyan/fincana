@@ -1,0 +1,20 @@
+{
+    "name": "samvelsargisan/fincana",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Samson",
+            "email": "samvel.sargisyan@bk.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.3|^8.0"
+    }
+}
